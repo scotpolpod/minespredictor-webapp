@@ -238,7 +238,7 @@ body::before {
   align-items: center;
   padding: 18px 14px 36px;
   gap: 14px;
-  min-height: 100vh;
+  min-height: var(--tg-height, 100vh);
   position: relative;
   z-index: 1;
 }
@@ -868,6 +868,12 @@ input[type=range]::-webkit-slider-thumb:active {
 /* ── TABS 3-col ── */
 .tabs-3 {
   grid-template-columns: 1fr 1fr 1fr;
+}
+
+.tabs-3 .tab {
+  font-size: 12px;
+  padding: 10px 4px;
+  letter-spacing: 0;
 }
 
 /* ── SUBSCRIPTION PAGE ── */

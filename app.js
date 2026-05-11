@@ -1,5 +1,14 @@
 const tg = window.Telegram?.WebApp;
-if (tg) { tg.expand(); tg.setHeaderColor('#0d0d14'); }
+if (tg) {
+  tg.expand();
+  tg.setHeaderColor('#0d0d14');
+  function setTgHeight() {
+    var h = (tg.viewportStableHeight || tg.viewportHeight || window.innerHeight) + 'px';
+    document.documentElement.style.setProperty('--tg-height', h);
+  }
+  setTgHeight();
+  tg.onEvent('viewportChanged', setTgHeight);
+}
 
 const GRID_SIZE     = 25;
 const CRYSTAL_EMOJI = '💎';
