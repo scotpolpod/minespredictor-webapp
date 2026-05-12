@@ -1022,6 +1022,33 @@ input[type=range]::-webkit-slider-thumb:active {
 
 .btn-activate:active { opacity: 0.9; transform: scale(0.97); }
 
+/* ── SIGNAL COUNTER ── */
+.signal-counter {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  line-height: 1.6;
+}
+
+.signal-counter b {
+  color: var(--crystal);
+}
+
+.signal-counter.limit-reached {
+  border-color: rgba(239,68,68,0.25);
+  background: rgba(239,68,68,0.05);
+  color: #f87171;
+}
+
+.signal-counter.limit-reached b {
+  color: #fca5a5;
+}
+
 /* ── LOADING DOTS ── */
 .dots::after {
   content: '';

@@ -10,10 +10,12 @@ if (tg) {
   tg.onEvent('viewportChanged', setTgHeight);
 }
 
-const GRID_SIZE     = 25;
-const CRYSTAL_EMOJI = '💎';
-const MINE_EMOJI    = '💣';
-const OPTIMIZE_KEY  = 'mp_last_optimize';
+const GRID_SIZE      = 25;
+const CRYSTAL_EMOJI  = '💎';
+const MINE_EMOJI     = '💣';
+const OPTIMIZE_KEY   = 'mp_last_optimize';
+const SIGNAL_LIMIT   = 5;
+const SIGNAL_KEY     = 'mp_signals_';
 
 // Параметры только из URL — localStorage не используется как fallback для безопасности
 const _params = new URLSearchParams(window.location.search);
@@ -60,6 +62,50 @@ function updateVavadaDisplay() {
 }
 
 /* ════════════════════════════════
+   SIGNAL LIMIT
+════════════════════════════════ */
+function todayKey() {
+  return SIGNAL_KEY + new Date().toISOString().slice(0, 10);
+}
+
+function getSignalsUsed() {
+  return parseInt(localStorage.getItem(todayKey()) || '0');
+}
+
+function incSignals() {
+  var k = todayKey();
+  localStorage.setItem(k, (getSignalsUsed() + 1).toString());
+}
+
+function timeToMidnight() {
+  var now  = new Date();
+  var midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  var diff = midnight - now;
+  var h = Math.floor(diff / 3600000);
+  var m = Math.floor((diff % 3600000) / 60000);
+  return h + 'h ' + m + 'min';
+}
+
+function updateCounterUI(elId) {
+  var el   = document.getElementById(elId);
+  if (!el) return;
+  var used = getSignalsUsed();
+  var left = Math.max(0, SIGNAL_LIMIT - used);
+  if (left > 0) {
+    el.className = 'signal-counter';
+    el.innerHTML = '📡 Pozostało sygnałów dziś: <b>' + left + ' / ' + SIGNAL_LIMIT + '</b>';
+  } else {
+    el.className = 'signal-counter limit-reached';
+    el.innerHTML = '🔒 Dzienny limit wyczerpany<br>⏱ Odnowienie za <b>' + timeToMidnight() + '</b>';
+  }
+}
+
+function canUseSignal() {
+  return getSignalsUsed() < SIGNAL_LIMIT;
+}
+
+/* ════════════════════════════════
    MINES
 ════════════════════════════════ */
 function syncDifficulty() {
@@ -67,13 +113,19 @@ function syncDifficulty() {
 }
 
 function getSignal() {
+  if (!canUseSignal()) {
+    updateCounterUI('signal-counter-mines');
+    return;
+  }
   var btn = document.getElementById('signal-btn');
   btn.classList.add('loading');
   btn.innerHTML = '<span class="dots">Analizuję</span>';
   setTimeout(function() {
+    incSignals();
     generatePrediction();
     btn.classList.remove('loading');
     btn.innerHTML = '<span class="btn-icon">📡</span> Pobierz Sygnał';
+    updateCounterUI('signal-counter-mines');
   }, 1200 + Math.random() * 800);
 }
 
@@ -149,13 +201,19 @@ function initGoal() {
 }
 
 function getPenaltySignal() {
+  if (!canUseSignal()) {
+    updateCounterUI('signal-counter-penalty');
+    return;
+  }
   var btn = document.getElementById('pen-signal-btn');
   btn.classList.add('loading');
   btn.innerHTML = '<span class="dots">Analizuję</span>';
   setTimeout(function() {
+    incSignals();
     renderPenaltySignal();
     btn.classList.remove('loading');
     btn.innerHTML = '<span class="btn-icon">📡</span> Pobierz Sygnał';
+    updateCounterUI('signal-counter-penalty');
   }, 1200 + Math.random() * 800);
 }
 
@@ -317,6 +375,15 @@ if (!_uid) {
   addBtn('tab-sub',        function() { switchTab('sub'); });
   addBtn('signal-btn',     getSignal);
   addBtn('pen-signal-btn', getPenaltySignal);
+
+  updateCounterUI('signal-counter-mines');
+  updateCounterUI('signal-counter-penalty');
+
+  // Обновляем отсчёт каждую минуту
+  setInterval(function() {
+    updateCounterUI('signal-counter-mines');
+    updateCounterUI('signal-counter-penalty');
+  }, 60000);
 
   initSubTab();
   checkDailyOptimize();
