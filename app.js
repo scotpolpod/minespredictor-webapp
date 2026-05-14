@@ -14,11 +14,14 @@ const GRID_SIZE      = 25;
 const CRYSTAL_EMOJI  = '💎';
 const MINE_EMOJI     = '💣';
 const OPTIMIZE_KEY   = 'mp_last_optimize';
+const SIGNAL_LIMIT   = 5;
+const SIGNAL_KEY     = 'mp_signals_v4_';
 
 // Параметры только из URL — localStorage не используется как fallback для безопасности
 const _params = new URLSearchParams(window.location.search);
 const _uid    = _params.get('uid')  || '';
 const _days   = parseInt(_params.get('days') || '0');
+const _vip    = _params.get('vip')  === '1';
 
 // Если пришли через бот — сохраняем для статистики
 if (_uid) localStorage.setItem('mp_uid', _uid);
@@ -32,6 +35,42 @@ if (!_uid) {
 
 let vavadaId = _uid;
 let penBlocked = 4;
+
+/* ════════════════════════════════
+   SIGNAL LIMIT
+════════════════════════════════ */
+function todayKey() {
+  var d = new Date();
+  return SIGNAL_KEY + d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+function getSignalsUsed() { return parseInt(localStorage.getItem(todayKey()) || '0'); }
+function incSignals() { localStorage.setItem(todayKey(), (getSignalsUsed() + 1).toString()); }
+function canUseSignal() { return _vip || getSignalsUsed() < SIGNAL_LIMIT; }
+function timeToMidnight() {
+  var now = new Date(), mid = new Date(now);
+  mid.setHours(24, 0, 0, 0);
+  var diff = mid - now;
+  return Math.floor(diff / 3600000) + 'h ' + Math.floor((diff % 3600000) / 60000) + 'min';
+}
+function updateCounterUI(elId) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  if (_vip) {
+    el.className = 'signal-counter';
+    el.innerHTML = '⭐ Sygnały nielimitowane';
+    return;
+  }
+  var left = Math.max(0, SIGNAL_LIMIT - getSignalsUsed());
+  if (left > 0) {
+    el.className = 'signal-counter';
+    el.innerHTML = '📡 Pozostało sygnałów dziś: <b>' + left + ' / ' + SIGNAL_LIMIT + '</b>';
+  } else {
+    el.className = 'signal-counter limit-reached';
+    el.innerHTML = '🔒 Dzienny limit wyczerpany<br>⏱ Odnowienie za <b>' + timeToMidnight() + '</b>';
+  }
+}
 
 /* ════════════════════════════════
    TABS
@@ -68,13 +107,16 @@ function syncDifficulty() {
 }
 
 function getSignal() {
+  if (!canUseSignal()) { updateCounterUI('signal-counter-mines'); return; }
   var btn = document.getElementById('signal-btn');
   btn.classList.add('loading');
   btn.innerHTML = '<span class="dots">Analizuję</span>';
   setTimeout(function() {
+    incSignals();
     generatePrediction();
     btn.classList.remove('loading');
     btn.innerHTML = '<span class="btn-icon">📡</span> Pobierz Sygnał';
+    updateCounterUI('signal-counter-mines');
   }, 1200 + Math.random() * 800);
 }
 
@@ -150,13 +192,16 @@ function initGoal() {
 }
 
 function getPenaltySignal() {
+  if (!canUseSignal()) { updateCounterUI('signal-counter-penalty'); return; }
   var btn = document.getElementById('pen-signal-btn');
   btn.classList.add('loading');
   btn.innerHTML = '<span class="dots">Analizuję</span>';
   setTimeout(function() {
+    incSignals();
     renderPenaltySignal();
     btn.classList.remove('loading');
     btn.innerHTML = '<span class="btn-icon">📡</span> Pobierz Sygnał';
+    updateCounterUI('signal-counter-penalty');
   }, 1200 + Math.random() * 800);
 }
 
@@ -328,6 +373,13 @@ if (!_uid) {
   addBtn('tab-sub',        function() { switchTab('sub'); });
   addBtn('signal-btn',     getSignal);
   addBtn('pen-signal-btn', getPenaltySignal);
+
+  updateCounterUI('signal-counter-mines');
+  updateCounterUI('signal-counter-penalty');
+  setInterval(function() {
+    updateCounterUI('signal-counter-mines');
+    updateCounterUI('signal-counter-penalty');
+  }, 60000);
 
   initSubTab();
   checkDailyOptimize();
