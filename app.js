@@ -108,6 +108,7 @@ function syncDifficulty() {
 
 function getSignal() {
   if (!canUseSignal()) { updateCounterUI('signal-counter-mines'); return; }
+  document.getElementById('win-section-mines').style.display = 'none';
   var btn = document.getElementById('signal-btn');
   btn.classList.add('loading');
   btn.innerHTML = '<span class="dots">Analizuję</span>';
@@ -164,6 +165,7 @@ function updateStats(crystals, mines) {
     document.getElementById('stat-mines').textContent    = mines;
     document.getElementById('stat-accuracy').textContent = acc;
     document.querySelectorAll('#page-mines .stat-box').forEach(function(b) { b.classList.add('active'); });
+    document.getElementById('win-section-mines').style.display = 'block';
   }, GRID_SIZE * 40 + 100);
 }
 
@@ -193,6 +195,7 @@ function initGoal() {
 
 function getPenaltySignal() {
   if (!canUseSignal()) { updateCounterUI('signal-counter-penalty'); return; }
+  document.getElementById('win-section-penalty').style.display = 'none';
   var btn = document.getElementById('pen-signal-btn');
   btn.classList.add('loading');
   btn.innerHTML = '<span class="dots">Analizuję</span>';
@@ -233,6 +236,7 @@ function renderPenaltySignal() {
     document.getElementById('pen-stat-chance').textContent   = chance;
     document.getElementById('pen-stat-accuracy').textContent = acc;
     document.querySelectorAll('#page-penalty .stat-box').forEach(function(b) { b.classList.add('active'); });
+    document.getElementById('win-section-penalty').style.display = 'block';
   }, 15 * 35 + 100);
 }
 
@@ -373,6 +377,17 @@ if (!_uid) {
   addBtn('tab-sub',        function() { switchTab('sub'); });
   addBtn('signal-btn',     getSignal);
   addBtn('pen-signal-btn', getPenaltySignal);
+
+  addBtn('win-btn-mines', function() {
+    if (tg && tg.sendData) {
+      tg.sendData(JSON.stringify({ type: 'win', game: 'mines' }));
+    }
+  });
+  addBtn('win-btn-penalty', function() {
+    if (tg && tg.sendData) {
+      tg.sendData(JSON.stringify({ type: 'win', game: 'penalty' }));
+    }
+  });
 
   updateCounterUI('signal-counter-mines');
   updateCounterUI('signal-counter-penalty');
