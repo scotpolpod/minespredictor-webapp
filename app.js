@@ -39,14 +39,29 @@ let penBlocked = 4;
 /* ════════════════════════════════
    SIGNAL LIMIT
 ════════════════════════════════ */
-function todayKey() {
+function todayStr() {
   var d = new Date();
-  return SIGNAL_KEY + d.getFullYear() + '-' +
+  return d.getFullYear() + '-' +
     String(d.getMonth() + 1).padStart(2, '0') + '-' +
     String(d.getDate()).padStart(2, '0');
 }
-function getSignalsUsed() { return parseInt(localStorage.getItem(todayKey()) || '0'); }
-function incSignals() { localStorage.setItem(todayKey(), (getSignalsUsed() + 1).toString()); }
+function getSignalData() {
+  try {
+    var raw = localStorage.getItem(SIGNAL_KEY);
+    if (!raw) return { date: '', count: 0 };
+    var obj = JSON.parse(raw);
+    // новый день — сбрасываем счётчик
+    if (obj.date !== todayStr()) return { date: todayStr(), count: 0 };
+    return obj;
+  } catch(e) { return { date: todayStr(), count: 0 }; }
+}
+function getSignalsUsed() { return getSignalData().count; }
+function incSignals() {
+  var obj = getSignalData();
+  obj.date = todayStr();
+  obj.count = (obj.count || 0) + 1;
+  localStorage.setItem(SIGNAL_KEY, JSON.stringify(obj));
+}
 function canUseSignal() { return _vip || getSignalsUsed() < SIGNAL_LIMIT; }
 function timeToMidnight() {
   var now = new Date(), mid = new Date(now);
