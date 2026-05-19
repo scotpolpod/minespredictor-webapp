@@ -101,6 +101,7 @@ function switchTab(tab) {
   document.getElementById('tab-sub').classList.toggle('active',        tab === 'sub');
   var logos = { instrukcja: '📋 MinesPredictor', mines: '💎 MinesPredictor', penalty: '⚽ PenaltyPredictor', sub: '🔑 MinesPredictor' };
   document.getElementById('header-logo').textContent = logos[tab] || '💎 MinesPredictor';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /* ════════════════════════════════
