@@ -91,13 +91,15 @@ function updateCounterUI(elId) {
    TABS
 ════════════════════════════════ */
 function switchTab(tab) {
-  document.getElementById('page-mines').style.display   = tab === 'mines'   ? 'flex' : 'none';
-  document.getElementById('page-penalty').style.display = tab === 'penalty' ? 'flex' : 'none';
-  document.getElementById('page-sub').style.display     = tab === 'sub'     ? 'flex' : 'none';
-  document.getElementById('tab-mines').classList.toggle('active',   tab === 'mines');
-  document.getElementById('tab-penalty').classList.toggle('active', tab === 'penalty');
-  document.getElementById('tab-sub').classList.toggle('active',     tab === 'sub');
-  var logos = { mines: '💎 MinesPredictor', penalty: '⚽ PenaltyPredictor', sub: '🔑 MinesPredictor' };
+  document.getElementById('page-instrukcja').style.display = tab === 'instrukcja' ? 'flex' : 'none';
+  document.getElementById('page-mines').style.display      = tab === 'mines'      ? 'flex' : 'none';
+  document.getElementById('page-penalty').style.display    = tab === 'penalty'    ? 'flex' : 'none';
+  document.getElementById('page-sub').style.display        = tab === 'sub'        ? 'flex' : 'none';
+  document.getElementById('tab-instrukcja').classList.toggle('active', tab === 'instrukcja');
+  document.getElementById('tab-mines').classList.toggle('active',      tab === 'mines');
+  document.getElementById('tab-penalty').classList.toggle('active',    tab === 'penalty');
+  document.getElementById('tab-sub').classList.toggle('active',        tab === 'sub');
+  var logos = { instrukcja: '📋 MinesPredictor', mines: '💎 MinesPredictor', penalty: '⚽ PenaltyPredictor', sub: '🔑 MinesPredictor' };
   document.getElementById('header-logo').textContent = logos[tab] || '💎 MinesPredictor';
 }
 
@@ -383,10 +385,12 @@ if (!_uid) {
   syncDifficulty();
   document.getElementById('difficulty').addEventListener('input', syncDifficulty);
 
-  document.getElementById('page-mines').style.display   = 'flex';
-  document.getElementById('page-penalty').style.display = 'none';
-  document.getElementById('page-sub').style.display     = 'none';
+  document.getElementById('page-instrukcja').style.display = 'none';
+  document.getElementById('page-mines').style.display      = 'flex';
+  document.getElementById('page-penalty').style.display    = 'none';
+  document.getElementById('page-sub').style.display        = 'none';
 
+  addBtn('tab-instrukcja', function() { switchTab('instrukcja'); });
   addBtn('tab-mines',      function() { switchTab('mines'); });
   addBtn('tab-penalty',    function() { switchTab('penalty'); });
   addBtn('tab-sub',        function() { switchTab('sub'); });
