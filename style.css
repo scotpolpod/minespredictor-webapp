@@ -689,6 +689,12 @@ input[type=range]::-webkit-slider-thumb:active {
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: 0.1px;
+  font-family: inherit;
+  text-align: center;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  touch-action: manipulation;
 }
 
 .tab.active {
