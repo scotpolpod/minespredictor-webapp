@@ -40,7 +40,10 @@
 
   <!-- Шапка -->
   <header>
-    <div class="logo" id="header-logo">💎 MinesPredictor</div>
+    <div class="header-left">
+      <div class="logo" id="header-logo">💎 MinesPredictor</div>
+      <div class="sub-days-badge" id="sub-days-badge" style="display:none"></div>
+    </div>
     <div class="algo-badge" id="algo-badge">🔄 Algo: aktualny</div>
   </header>
 
@@ -51,16 +54,19 @@
         <div class="game-card-icon">💎</div>
         <div class="game-card-name">Mines</div>
         <div class="game-card-desc">Predyktor pól</div>
+        <div class="game-card-signals" id="card-sig-mines">📡 —</div>
       </button>
       <button class="game-card game-card-penalty" onclick="openGame('penalty')">
         <div class="game-card-icon">⚽</div>
         <div class="game-card-name">Penalty</div>
         <div class="game-card-desc">Predyktor stref</div>
+        <div class="game-card-signals" id="card-sig-penalty">📡 —</div>
       </button>
       <button class="game-card game-card-aviator" onclick="openGame('aviator')">
         <div class="game-card-icon">✈️</div>
         <div class="game-card-name">Aviator</div>
         <div class="game-card-desc">Predyktor kursu</div>
+        <div class="game-card-signals" id="card-sig-aviator">📡 —</div>
       </button>
     </div>
     <div class="home-bottom-btns">

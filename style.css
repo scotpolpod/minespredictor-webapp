@@ -253,6 +253,19 @@ header {
   padding: 4px 2px;
 }
 
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sub-days-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #34d399;
+  letter-spacing: 0.2px;
+}
+
 .logo {
   font-size: 21px;
   font-weight: 900;
@@ -880,23 +893,59 @@ input[type=range]::-webkit-slider-thumb:active {
   margin-top: 8px;
 }
 
+/* ── GAME CARD ANIMATIONS ── */
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(38px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+@keyframes cardGlowPulse {
+  0%, 100% { opacity: 0; transform: scale(1); }
+  50%       { opacity: 1; transform: scale(1.03); }
+}
+
 .game-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 26px 8px;
+  padding: 22px 8px 14px;
   border-radius: 24px;
   border: none;
   cursor: pointer;
-  gap: 10px;
-  transition: transform 0.15s, box-shadow 0.15s;
+  gap: 8px;
   font-family: inherit;
   touch-action: manipulation;
   min-height: 150px;
+  position: relative;
+  overflow: visible;
+  /* slide-in on every home-screen reveal */
+  animation: cardSlideIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.game-card:active { transform: scale(0.93); }
+.game-card:nth-child(1) { animation-delay: 0.05s; }
+.game-card:nth-child(2) { animation-delay: 0.16s; }
+.game-card:nth-child(3) { animation-delay: 0.27s; }
+
+/* Glow ring via ::after — independent of element animation */
+.game-card::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 27px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+.game-card-mines::after  { box-shadow: 0 0 22px 5px rgba(99,102,241,0.55); }
+.game-card-penalty::after { box-shadow: 0 0 22px 5px rgba(34,197,94,0.55); }
+.game-card-aviator::after { box-shadow: 0 0 22px 5px rgba(251,146,60,0.55); }
+
+.game-card.pulsing::after {
+  animation: cardGlowPulse 2.2s ease-in-out infinite;
+}
+
+.game-card:active { transform: scale(0.93) !important; }
 
 .game-card-mines {
   background: linear-gradient(145deg, #1a1f4e, #1e2a6e);
@@ -929,6 +978,24 @@ input[type=range]::-webkit-slider-thumb:active {
   color: var(--text-muted);
   text-align: center;
   line-height: 1.4;
+}
+
+/* Signal badge on card */
+.game-card-signals {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 99px;
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+}
+.sig-ok {
+  background: rgba(255,255,255,0.08);
+  color: #a5f3fc;
+}
+.sig-empty {
+  background: rgba(239,68,68,0.12);
+  color: #f87171;
 }
 
 .home-bottom-btns {

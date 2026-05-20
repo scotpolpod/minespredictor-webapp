@@ -63,6 +63,32 @@ function incSignals() {
   obj.date = todayStr();
   obj.count = (obj.count || 0) + 1;
   localStorage.setItem(SIGNAL_KEY, JSON.stringify(obj));
+  updateHomeCards();
+}
+
+function updateHomeCards() {
+  var used  = getSignalsUsed();
+  var total = getTotalLimit();
+  var left  = Math.max(0, total - used);
+  ['mines','penalty','aviator'].forEach(function(g) {
+    var el   = document.getElementById('card-sig-' + g);
+    var card = el && el.closest('.game-card');
+    if (!el) return;
+    if (_vip) {
+      el.textContent = '📡 ∞';
+      el.className   = 'game-card-signals sig-ok';
+    } else if (left > 0) {
+      el.textContent = '📡 ' + left + '/' + total;
+      el.className   = 'game-card-signals sig-ok';
+    } else {
+      el.textContent = '🔒 0/' + total;
+      el.className   = 'game-card-signals sig-empty';
+    }
+    if (card) {
+      if (_vip || left > 0) card.classList.add('pulsing');
+      else                   card.classList.remove('pulsing');
+    }
+  });
 }
 function getTotalLimit() { return SIGNAL_LIMIT + _bonus; }
 function canUseSignal() { return _vip || getSignalsUsed() < getTotalLimit(); }
@@ -486,10 +512,21 @@ if (!_uid) {
   syncDifficulty();
   document.getElementById('difficulty').addEventListener('input', syncDifficulty);
 
+  // Sub days badge
+  var subBadge = document.getElementById('sub-days-badge');
+  if (subBadge) {
+    if (_days > 0) {
+      subBadge.textContent = '✅ ' + _days + ' dni';
+      subBadge.style.display = 'block';
+    }
+  }
+
   // Показываем главный экран
   PAGES.forEach(function(p) {
     document.getElementById('page-' + p).style.display = p === 'home' ? 'flex' : 'none';
   });
+
+  updateHomeCards();
 
   addBtn('signal-btn',     getSignal);
   addBtn('pen-signal-btn', getPenaltySignal);
