@@ -378,14 +378,25 @@ var W_NOTHING_IDXS = [0, 2, 4, 5, 7];
 function drawWheelCanvas() {
   var canvas = document.getElementById('wheel-canvas');
   if (!canvas || !canvas.getContext) return;
+
+  // Hi-DPI fix: scale canvas by devicePixelRatio so it's crisp on retina/mobile
+  var dpr  = window.devicePixelRatio || 1;
+  var size = 280;
+  canvas.width  = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width  = size + 'px';
+  canvas.style.height = size + 'px';
+
   var ctx = canvas.getContext('2d');
-  var cx  = canvas.width  / 2;
-  var cy  = canvas.height / 2;
-  var r   = cx - 4;
+  ctx.scale(dpr, dpr);
+
+  var cx  = size / 2;
+  var cy  = size / 2;
+  var r   = cx - 5;
   var n   = W_SEG.length;
   var arc = (Math.PI * 2) / n;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, size, size);
 
   W_SEG.forEach(function(seg, i) {
     var a0 = i * arc - Math.PI / 2;
@@ -407,13 +418,16 @@ function drawWheelCanvas() {
     ctx.save();
     ctx.translate(cx + Math.cos(mid) * tr, cy + Math.sin(mid) * tr);
     ctx.rotate(mid + Math.PI / 2);
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign    = 'center';
+    ctx.fillStyle    = '#fff';
+    ctx.font         = 'bold 14px -apple-system, sans-serif';
+    ctx.shadowColor  = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur   = 3;
     ctx.fillText(seg.label, 0, -4);
-    ctx.font = '9px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.65)';
-    ctx.fillText(seg.sub, 0, 8);
+    ctx.font         = '10px -apple-system, sans-serif';
+    ctx.fillStyle    = 'rgba(255,255,255,0.75)';
+    ctx.fillText(seg.sub, 0, 9);
+    ctx.shadowBlur   = 0;
     ctx.restore();
   });
 
