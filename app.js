@@ -23,6 +23,7 @@ const _uid    = _params.get('uid')  || '';
 const _days   = parseInt(_params.get('days') || '0');
 const _vip    = _params.get('vip')  === '1';
 const _bonus  = parseInt(_params.get('bonus') || '0');  // referral bonus signals
+const _ref    = _params.get('ref') || '';               // user's own referral code
 
 // Если пришли через бот — сохраняем для статистики
 if (_uid) localStorage.setItem('mp_uid', _uid);
@@ -353,6 +354,37 @@ function initSubTab() {
     if (tg && tg.openTelegramLink) tg.openTelegramLink('https://t.me/rmpl13');
     else window.open('https://t.me/rmpl13', '_blank');
   });
+
+  // ── Referral section ──
+  var refSection = document.getElementById('ref-section');
+  if (refSection && _ref) {
+    refSection.style.display = 'block';
+    var botLink = 'https://t.me/' + (_params.get('bot') || 'MinesPredictorBot') + '?start=' + _ref;
+    // try to read bot username from URL (passed by bot as &bot=Username)
+    document.getElementById('ref-link-value').textContent = botLink;
+    var bonusRow = document.getElementById('ref-bonus-row');
+    if (bonusRow) {
+      bonusRow.innerHTML = _bonus > 0
+        ? '🎁 Twój bonus: <b>+' + _bonus + ' sygnałów/dzień</b> (dzięki ' + Math.floor(_bonus / 2) + ' znajomym)'
+        : '🎁 Poleć znajomemu — zyskasz <b>+2 sygnały/dzień</b>!';
+    }
+    // Share button — Telegram native share
+    addBtn('btn-ref-share', function() {
+      var shareText = encodeURIComponent('Dołącz do MinesPredictor — algorytm do przewidywania min, penalty i Aviatora! 🎯');
+      var shareUrl  = encodeURIComponent(botLink);
+      var shareLink = 'https://t.me/share/url?url=' + shareUrl + '&text=' + shareText;
+      if (tg && tg.openTelegramLink) tg.openTelegramLink(shareLink);
+      else window.open(shareLink, '_blank');
+    });
+    // Copy button
+    addBtn('btn-ref-copy', function() {
+      var toast = document.getElementById('ref-copy-toast');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(botLink).catch(function() {});
+      }
+      if (toast) { toast.style.opacity = '1'; setTimeout(function() { toast.style.opacity = '0'; }, 2000); }
+    });
+  }
 
   // Aktywacja kodu
   addBtn('code-activate-btn', function() {
