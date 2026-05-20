@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<!-- Экран-заглушка (открыт не через бота) -->
+<!-- Экран-заглушка -->
 <div id="gate-screen" style="display:none">
   <div class="gate-box">
     <div class="gate-icon">🔒</div>
@@ -44,62 +44,34 @@
     <div class="algo-badge" id="algo-badge">🔄 Algo: aktualny</div>
   </header>
 
-  <!-- Табы (4 колонки) -->
-  <div class="tabs tabs-4">
-    <button class="tab" id="tab-instrukcja" onclick="switchTab('instrukcja')">📋 Instrukcja</button>
-    <button class="tab active" id="tab-mines" onclick="switchTab('mines')">💎 Mines</button>
-    <button class="tab" id="tab-penalty" onclick="switchTab('penalty')">⚽ Penalty</button>
-    <button class="tab" id="tab-sub" onclick="switchTab('sub')">🔑 Konto</button>
+  <!-- ══════════ ГЛАВНЫЙ ЭКРАН — сетка игр ══════════ -->
+  <div id="page-home" class="page">
+    <div class="home-grid">
+      <button class="game-card game-card-mines" onclick="openGame('mines')">
+        <div class="game-card-icon">💎</div>
+        <div class="game-card-name">Mines</div>
+        <div class="game-card-desc">Predyktor pól</div>
+      </button>
+      <button class="game-card game-card-penalty" onclick="openGame('penalty')">
+        <div class="game-card-icon">⚽</div>
+        <div class="game-card-name">Penalty</div>
+        <div class="game-card-desc">Predyktor stref</div>
+      </button>
+      <button class="game-card game-card-aviator" onclick="openGame('aviator')">
+        <div class="game-card-icon">✈️</div>
+        <div class="game-card-name">Aviator</div>
+        <div class="game-card-desc">Predyktor kursu</div>
+      </button>
+    </div>
+    <div class="home-bottom-btns">
+      <button class="home-btn-secondary" onclick="openGame('instrukcja')">📋 Instrukcja</button>
+      <button class="home-btn-secondary" onclick="openGame('sub')">🔑 Konto</button>
+    </div>
   </div>
 
-  <!-- ══════════ TAB: INSTRUKCJA ══════════ -->
-  <div id="page-instrukcja" class="page" style="display:none; padding-top:8px">
-    <section class="disclaimer-section">
-      <div class="disclaimer-box">
-        <div class="disclaimer-title">💎 Mines — Wskazówki</div>
-        <ul class="disclaimer-list">
-          <li><span class="disc-icon">💎</span>
-            Zalecamy zbierać <strong>do 5 kryształów</strong> na rundę — to optymalny poziom dla wysokiej szansy wygranej
-          </li>
-          <li><span class="disc-icon">⚠️</span>
-            Mogą wystąpić <strong>drobne odchylenia</strong> algorytmu — zawsze graj ostrożnie
-          </li>
-          <li><span class="disc-icon">💰</span>
-            Rekomendowana stawka: <strong>30–40% depozytu</strong> na jedną rundę dla zarządzania ryzykiem
-          </li>
-          <li><span class="disc-icon">🔄</span>
-            Jeśli sygnał <strong>nie trafił</strong> — w następnej rundzie <strong>obniż poziom trudności</strong> o 1 i <strong>podwój stawkę</strong>, aby odrobić stratę
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="disclaimer-section">
-      <div class="disclaimer-box">
-        <div class="disclaimer-title">⚽ Penalty — Wskazówki</div>
-        <ul class="disclaimer-list">
-          <li><span class="disc-icon">⚽</span>
-            Uderzaj tylko w <strong>podświetloną strefę</strong> — algorytm wybrał optymalną pozycję
-          </li>
-          <li><span class="disc-icon">🎯</span>
-            Postaw <strong>1 zakład</strong> na wskazaną strefę i <strong>od razu odbierz</strong> wygraną — nie czekaj na kolejne rundy
-          </li>
-          <li><span class="disc-icon">⚠️</span>
-            Mogą wystąpić <strong>drobne odchylenia</strong> algorytmu — zawsze graj ostrożnie
-          </li>
-          <li><span class="disc-icon">💰</span>
-            Rekomendowana stawka: <strong>30–40% depozytu</strong> na jedną rundę
-          </li>
-          <li><span class="disc-icon">🔄</span>
-            Jeśli sygnał <strong>nie trafił</strong> — w następnej rundzie zmień strefę na <strong>Łatwy</strong> i <strong>podwój stawkę</strong>, aby odrobić stratę
-          </li>
-        </ul>
-      </div>
-    </section>
-  </div>
-
-  <!-- ══════════ TAB: MINES ══════════ -->
-  <div id="page-mines" class="page">
+  <!-- ══════════ PAGE: MINES ══════════ -->
+  <div id="page-mines" class="page" style="display:none">
+    <button class="btn-back" onclick="showHome()">← Wróć</button>
 
     <section class="difficulty-section">
       <label>Poziom trudności: <span id="diff-label">3</span> min</label>
@@ -148,14 +120,14 @@
     <section class="win-section" id="win-section-mines" style="display:none">
       <button class="btn-win" id="win-btn-mines">✅ Wygrałem!</button>
     </section>
-
   </div>
 
-  <!-- ══════════ TAB: PENALTY ══════════ -->
+  <!-- ══════════ PAGE: PENALTY ══════════ -->
   <div id="page-penalty" class="page" style="display:none">
+    <button class="btn-back" onclick="showHome()">← Wróć</button>
 
     <section class="difficulty-section">
-      <label>Poziom trudności: <span id="pen-diff-label">Średni</span></label>
+      <label>Poziom trudności: <span id="pen-diff-label">Łatwy</span></label>
       <div class="pen-diff-btns">
         <button class="pen-diff-btn active" onclick="setPenDiff(this,'Łatwy',2)">Łatwy</button>
         <button class="pen-diff-btn" onclick="setPenDiff(this,'Średni',4)">Średni</button>
@@ -206,13 +178,139 @@
     <section class="win-section" id="win-section-penalty" style="display:none">
       <button class="btn-win" id="win-btn-penalty">✅ Wygrałem!</button>
     </section>
-
   </div>
 
-  <!-- ══════════ TAB: KONTO ══════════ -->
-  <div id="page-sub" class="page" style="display:none">
+  <!-- ══════════ PAGE: AVIATOR ══════════ -->
+  <div id="page-aviator" class="page" style="display:none">
+    <button class="btn-back" onclick="showHome()">← Wróć</button>
 
-    <!-- Status subskrypcji -->
+    <section class="aviator-display-section">
+      <div class="aviator-plane">✈️</div>
+      <div class="aviator-label">Optymalny kurs wypłaty</div>
+      <div class="aviator-coeff" id="aviator-coeff">—</div>
+      <div class="aviator-hint" id="aviator-hint">Pobierz sygnał aby uzyskać predykcję</div>
+    </section>
+
+    <section class="vavada-section">
+      <div class="vavada-id-display" id="vavada-display-avi">
+        <span id="vavada-id-text-avi">🎰 Brak ID — ustaw w bocie</span>
+      </div>
+    </section>
+
+    <section class="signal-section">
+      <button class="btn-signal btn-signal-aviator" id="avi-signal-btn">
+        <span class="btn-icon">📡</span>
+        Pobierz Sygnał
+      </button>
+      <div class="signal-counter" id="signal-counter-aviator"></div>
+    </section>
+
+    <section class="stats-section">
+      <div class="stat-box">
+        <div class="stat-val" id="avi-stat-coeff">—</div>
+        <div class="stat-lbl">Ostatni kurs</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="avi-stat-wins">0</div>
+        <div class="stat-lbl">Wygrane</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="avi-stat-accuracy">—</div>
+        <div class="stat-lbl">Dokładność</div>
+      </div>
+    </section>
+
+    <section class="win-section" id="win-section-aviator" style="display:none">
+      <button class="btn-win" id="win-btn-aviator">✅ Wygrałem!</button>
+    </section>
+
+    <section class="disclaimer-section">
+      <div class="disclaimer-box">
+        <div class="disclaimer-title">✈️ Aviator — Wskazówki</div>
+        <ul class="disclaimer-list">
+          <li><span class="disc-icon">🎯</span>
+            Wypłać przy kursie wskazanym przez algorytm — <strong>nie czekaj na więcej</strong>
+          </li>
+          <li><span class="disc-icon">⚠️</span>
+            W <strong>90% rund</strong> samolot spada przed ×1.50 — nie ryzykuj wyższych kursów
+          </li>
+          <li><span class="disc-icon">🔄</span>
+            Jeśli sygnał <strong>nie trafił</strong> — w następnej rundzie <strong>podwój stawkę</strong>
+          </li>
+          <li><span class="disc-icon">💰</span>
+            Rekomendowana stawka: <strong>20–30% depozytu</strong> na rundę
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══════════ PAGE: INSTRUKCJA ══════════ -->
+  <div id="page-instrukcja" class="page" style="display:none">
+    <button class="btn-back" onclick="showHome()">← Wróć</button>
+
+    <section class="disclaimer-section">
+      <div class="disclaimer-box">
+        <div class="disclaimer-title">💎 Mines — Wskazówki</div>
+        <ul class="disclaimer-list">
+          <li><span class="disc-icon">💎</span>
+            Zalecamy zbierać <strong>do 5 kryształów</strong> na rundę — to optymalny poziom dla wysokiej szansy wygranej
+          </li>
+          <li><span class="disc-icon">⚠️</span>
+            Mogą wystąpić <strong>drobne odchylenia</strong> algorytmu — zawsze graj ostrożnie
+          </li>
+          <li><span class="disc-icon">💰</span>
+            Rekomendowana stawka: <strong>30–40% depozytu</strong> na jedną rundę
+          </li>
+          <li><span class="disc-icon">🔄</span>
+            Jeśli sygnał <strong>nie trafił</strong> — <strong>obniż poziom trudności</strong> o 1 i <strong>podwój stawkę</strong>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="disclaimer-section">
+      <div class="disclaimer-box">
+        <div class="disclaimer-title">⚽ Penalty — Wskazówki</div>
+        <ul class="disclaimer-list">
+          <li><span class="disc-icon">⚽</span>
+            Uderzaj tylko w <strong>podświetloną strefę</strong> — algorytm wybrał optymalną pozycję
+          </li>
+          <li><span class="disc-icon">🎯</span>
+            Postaw <strong>1 zakład</strong> i <strong>od razu odbierz</strong> wygraną
+          </li>
+          <li><span class="disc-icon">🔄</span>
+            Jeśli sygnał <strong>nie trafił</strong> — zmień strefę na <strong>Łatwy</strong> i <strong>podwój stawkę</strong>
+          </li>
+          <li><span class="disc-icon">💰</span>
+            Rekomendowana stawka: <strong>30–40% depozytu</strong> na jedną rundę
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="disclaimer-section">
+      <div class="disclaimer-box">
+        <div class="disclaimer-title">✈️ Aviator — Wskazówki</div>
+        <ul class="disclaimer-list">
+          <li><span class="disc-icon">🎯</span>
+            Wypłać przy kursie wskazanym przez algorytm — <strong>nie czekaj na więcej</strong>
+          </li>
+          <li><span class="disc-icon">⚠️</span>
+            W <strong>90% rund</strong> samolot spada przed ×1.50
+          </li>
+          <li><span class="disc-icon">💰</span>
+            Rekomendowana stawka: <strong>20–30% depozytu</strong> na rundę
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══════════ PAGE: KONTO ══════════ -->
+  <div id="page-sub" class="page" style="display:none">
+    <button class="btn-back" onclick="showHome()">← Wróć</button>
+
     <div class="sub-card" id="sub-card">
       <div class="sub-card-icon" id="sub-card-icon">⏳</div>
       <div class="sub-card-content">
@@ -221,7 +319,6 @@
       </div>
     </div>
 
-    <!-- Plany -->
     <div class="sub-section">
       <div class="sub-section-title">💳 Dostępne plany</div>
       <div class="sub-plans">
@@ -234,7 +331,6 @@
       <button class="btn-buy" id="btn-buy">💬 Kup subskrypcję u @rmpl13</button>
     </div>
 
-    <!-- Aktywacja kodu -->
     <div class="sub-section">
       <div class="sub-section-title">🔑 Aktywuj kod promocyjny</div>
       <div class="code-input-wrap">
@@ -243,7 +339,6 @@
       </div>
       <div id="code-error" style="display:none; color:#ef4444; font-size:13px; margin-top:4px;">⚠️ Wprowadź poprawny kod</div>
     </div>
-
   </div>
 
 </div><!-- /main-screen -->

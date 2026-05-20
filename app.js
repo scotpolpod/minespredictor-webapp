@@ -90,19 +90,26 @@ function updateCounterUI(elId) {
 /* ════════════════════════════════
    TABS
 ════════════════════════════════ */
-function switchTab(tab) {
-  document.getElementById('page-instrukcja').style.display = tab === 'instrukcja' ? 'flex' : 'none';
-  document.getElementById('page-mines').style.display      = tab === 'mines'      ? 'flex' : 'none';
-  document.getElementById('page-penalty').style.display    = tab === 'penalty'    ? 'flex' : 'none';
-  document.getElementById('page-sub').style.display        = tab === 'sub'        ? 'flex' : 'none';
-  document.getElementById('tab-instrukcja').classList.toggle('active', tab === 'instrukcja');
-  document.getElementById('tab-mines').classList.toggle('active',      tab === 'mines');
-  document.getElementById('tab-penalty').classList.toggle('active',    tab === 'penalty');
-  document.getElementById('tab-sub').classList.toggle('active',        tab === 'sub');
-  var logos = { instrukcja: '📋 MinesPredictor', mines: '💎 MinesPredictor', penalty: '⚽ PenaltyPredictor', sub: '🔑 MinesPredictor' };
-  document.getElementById('header-logo').textContent = logos[tab] || '💎 MinesPredictor';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+var PAGES = ['home','mines','penalty','aviator','instrukcja','sub'];
+var LOGOS = { home: '💎 MinesPredictor', mines: '💎 Mines', penalty: '⚽ Penalty', aviator: '✈️ Aviator', instrukcja: '📋 Instrukcja', sub: '🔑 Konto' };
+
+function openGame(page) {
+  PAGES.forEach(function(p) {
+    document.getElementById('page-' + p).style.display = p === page ? 'flex' : 'none';
+  });
+  document.getElementById('header-logo').textContent = LOGOS[page] || '💎 MinesPredictor';
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  if (page === 'sub') initSubTab();
+  if (page === 'aviator') updateAviatorDisplay();
 }
+
+function showHome() {
+  openGame('home');
+  document.getElementById('header-logo').textContent = '💎 MinesPredictor';
+}
+
+// backward compat
+function switchTab(tab) { openGame(tab); }
 
 /* ════════════════════════════════
    VAVADA DISPLAY
@@ -259,6 +266,63 @@ function renderPenaltySignal() {
 }
 
 /* ════════════════════════════════
+   AVIATOR
+════════════════════════════════ */
+var _aviatorCoeff = null;
+var _aviatorWins  = 0;
+var _aviatorTotal = 0;
+
+function getAviatorCoeff() {
+  // 90% шанс что коэффициент <= 1.49x
+  if (Math.random() < 0.90) {
+    return (1.01 + Math.random() * 0.48).toFixed(2);
+  } else {
+    return (1.50 + Math.random() * 1.50).toFixed(2);
+  }
+}
+
+function updateAviatorDisplay() {
+  var el = document.getElementById('vavada-id-text-avi');
+  if (el) el.textContent = vavadaId ? '🎰 ID: ' + vavadaId : '🎰 Brak ID — ustaw w bocie';
+  updateCounterUI('signal-counter-aviator');
+}
+
+function getAviatorSignal() {
+  if (!canUseSignal()) {
+    updateCounterUI('signal-counter-aviator');
+    return;
+  }
+  var btn = document.getElementById('avi-signal-btn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+
+  document.getElementById('aviator-coeff').textContent = '...';
+  document.getElementById('aviator-hint').textContent  = 'Analizowanie wzorców...';
+  document.getElementById('win-section-aviator').style.display = 'none';
+
+  setTimeout(function() {
+    var coeff = getAviatorCoeff();
+    _aviatorCoeff = coeff;
+    _aviatorTotal++;
+
+    document.getElementById('aviator-coeff').textContent = '×' + coeff;
+    document.getElementById('avi-stat-coeff').textContent = '×' + coeff;
+
+    var isLow = parseFloat(coeff) <= 1.49;
+    document.getElementById('aviator-hint').textContent = isLow
+      ? '⚠️ Wypłać przed ×1.50 — ryzyko spadku jest wysokie!'
+      : '🚀 Algorytm wykrył wyższy potencjał — wypłać przy wskazanym kursie';
+
+    document.getElementById('win-section-aviator').style.display = 'flex';
+    document.getElementById('avi-stat-accuracy').textContent =
+      _aviatorTotal > 0 ? Math.round((_aviatorWins / _aviatorTotal) * 100) + '%' : '—';
+
+    incSignals();
+    updateCounterUI('signal-counter-aviator');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  }, 1800);
+}
+
+/* ════════════════════════════════
    SUBSCRIPTION TAB
 ════════════════════════════════ */
 function initSubTab() {
@@ -386,36 +450,38 @@ if (!_uid) {
   syncDifficulty();
   document.getElementById('difficulty').addEventListener('input', syncDifficulty);
 
-  document.getElementById('page-instrukcja').style.display = 'none';
-  document.getElementById('page-mines').style.display      = 'flex';
-  document.getElementById('page-penalty').style.display    = 'none';
-  document.getElementById('page-sub').style.display        = 'none';
+  // Показываем главный экран
+  PAGES.forEach(function(p) {
+    document.getElementById('page-' + p).style.display = p === 'home' ? 'flex' : 'none';
+  });
 
-  addBtn('tab-instrukcja', function() { switchTab('instrukcja'); });
-  addBtn('tab-mines',      function() { switchTab('mines'); });
-  addBtn('tab-penalty',    function() { switchTab('penalty'); });
-  addBtn('tab-sub',        function() { switchTab('sub'); });
   addBtn('signal-btn',     getSignal);
   addBtn('pen-signal-btn', getPenaltySignal);
+  addBtn('avi-signal-btn', getAviatorSignal);
 
   addBtn('win-btn-mines', function() {
-    if (tg && tg.sendData) {
-      tg.sendData(JSON.stringify({ type: 'win', game: 'mines' }));
-    }
+    _aviatorWins; // just ref
+    if (tg && tg.sendData) tg.sendData(JSON.stringify({ type: 'win', game: 'mines' }));
   });
   addBtn('win-btn-penalty', function() {
-    if (tg && tg.sendData) {
-      tg.sendData(JSON.stringify({ type: 'win', game: 'penalty' }));
-    }
+    if (tg && tg.sendData) tg.sendData(JSON.stringify({ type: 'win', game: 'penalty' }));
+  });
+  addBtn('win-btn-aviator', function() {
+    _aviatorWins++;
+    document.getElementById('avi-stat-wins').textContent = _aviatorWins;
+    if (_aviatorTotal > 0)
+      document.getElementById('avi-stat-accuracy').textContent = Math.round((_aviatorWins / _aviatorTotal) * 100) + '%';
+    if (tg && tg.sendData) tg.sendData(JSON.stringify({ type: 'win', game: 'aviator' }));
   });
 
   updateCounterUI('signal-counter-mines');
   updateCounterUI('signal-counter-penalty');
+  updateCounterUI('signal-counter-aviator');
   setInterval(function() {
     updateCounterUI('signal-counter-mines');
     updateCounterUI('signal-counter-penalty');
+    updateCounterUI('signal-counter-aviator');
   }, 60000);
 
-  initSubTab();
   checkDailyOptimize();
 }
