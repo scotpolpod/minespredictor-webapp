@@ -69,10 +69,48 @@
         <div class="game-card-signals" id="card-sig-aviator">📡 —</div>
       </button>
     </div>
+    <button class="btn-wheel-home" onclick="openGame('wheel')" id="btn-wheel-home">
+      <span class="wheel-home-left">🎡 Koło Fortuny</span>
+      <span class="wheel-home-badge" id="wheel-home-badge"></span>
+    </button>
+
     <div class="home-bottom-btns">
       <button class="home-btn-secondary" onclick="openGame('instrukcja')">📋 Instrukcja</button>
       <button class="home-btn-secondary" onclick="openGame('sub')">🔑 Konto</button>
     </div>
+  </div>
+
+  <!-- ══════════ PAGE: WHEEL ══════════ -->
+  <div id="page-wheel" class="page" style="display:none">
+    <button class="btn-back" onclick="showHome()">← Wróć</button>
+
+    <section class="wheel-section">
+      <div class="wheel-title">🎡 Koło Fortuny</div>
+      <div class="wheel-subtitle" id="wheel-subtitle">Kręć raz dziennie — zdobądź nagrodę!</div>
+
+      <div class="wheel-wrap">
+        <div class="wheel-pointer">▼</div>
+        <canvas id="wheel-canvas" width="280" height="280"></canvas>
+      </div>
+
+      <div class="wheel-result-box" id="wheel-result-box" style="display:none">
+        <div class="wheel-result-emoji" id="wheel-result-emoji">🎉</div>
+        <div class="wheel-result-text"  id="wheel-result-text"></div>
+      </div>
+
+      <button class="btn-signal btn-wheel-spin" id="wheel-spin-btn">
+        <span class="btn-icon">🎡</span> Zakręć!
+      </button>
+
+      <div class="wheel-cooldown-msg" id="wheel-cooldown-msg"></div>
+
+      <div class="wheel-prizes-legend">
+        <div class="wpl-row"><span class="wpl-dot" style="background:#065f46"></span><span>+2 sygnały dziennie</span><span class="wpl-pct">20%</span></div>
+        <div class="wpl-row"><span class="wpl-dot" style="background:#92400e"></span><span>+1 dzień subskrypcji</span><span class="wpl-pct">12%</span></div>
+        <div class="wpl-row"><span class="wpl-dot" style="background:#4c1d95"></span><span>+2 dni subskrypcji</span><span class="wpl-pct">8%</span></div>
+        <div class="wpl-row"><span class="wpl-dot" style="background:#1e2040"></span><span>Brak nagrody</span><span class="wpl-pct">60%</span></div>
+      </div>
+    </section>
   </div>
 
   <!-- ══════════ PAGE: MINES ══════════ -->

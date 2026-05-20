@@ -121,8 +121,8 @@ function updateCounterUI(elId) {
 /* ════════════════════════════════
    TABS
 ════════════════════════════════ */
-var PAGES = ['home','mines','penalty','aviator','instrukcja','sub'];
-var LOGOS = { home: '💎 MinesPredictor', mines: '💎 Mines', penalty: '⚽ Penalty', aviator: '✈️ Aviator', instrukcja: '📋 Instrukcja', sub: '🔑 Konto' };
+var PAGES = ['home','mines','penalty','aviator','instrukcja','sub','wheel'];
+var LOGOS = { home: '💎 MinesPredictor', mines: '💎 Mines', penalty: '⚽ Penalty', aviator: '✈️ Aviator', instrukcja: '📋 Instrukcja', sub: '🔑 Konto', wheel: '🎡 Koło Fortuny' };
 
 function openGame(page) {
   PAGES.forEach(function(p) {
@@ -130,8 +130,10 @@ function openGame(page) {
   });
   document.getElementById('header-logo').textContent = LOGOS[page] || '💎 MinesPredictor';
   window.scrollTo({ top: 0, behavior: 'instant' });
-  if (page === 'sub') initSubTab();
+  if (page === 'sub')    initSubTab();
   if (page === 'aviator') updateAviatorDisplay();
+  if (page === 'wheel')  initWheelPage();
+  if (page === 'home')   { updateHomeCards(); updateWheelHomeBadge(); }
 }
 
 function showHome() {
@@ -354,6 +356,224 @@ function getAviatorSignal() {
 }
 
 /* ════════════════════════════════
+   WHEEL OF FORTUNE
+════════════════════════════════ */
+var WHEEL_KEY   = 'mp_wheel_v1';
+var _wAngle     = 0;   // cumulative rotation (preserves spin position)
+var _wSpinning  = false;
+
+// 8 segments — defines visual + prize mapping
+var W_SEG = [
+  { label: 'Brak',  sub: 'nagrody', emoji: '💨', type: 'nothing',  color: '#1e2040' },
+  { label: '+2',    sub: 'sygnały', emoji: '📡', type: 'signals',  value: 2, color: '#065f46' },
+  { label: 'Brak',  sub: 'nagrody', emoji: '💨', type: 'nothing',  color: '#1a1a2e' },
+  { label: '+1',    sub: 'dzień',   emoji: '📅', type: 'days',     value: 1, color: '#92400e' },
+  { label: 'Brak',  sub: 'nagrody', emoji: '💨', type: 'nothing',  color: '#172036' },
+  { label: 'Brak',  sub: 'nagrody', emoji: '💨', type: 'nothing',  color: '#1a1a2e' },
+  { label: '+2',    sub: 'dni',     emoji: '🎁', type: 'days',     value: 2, color: '#4c1d95' },
+  { label: 'Brak',  sub: 'nagrody', emoji: '💨', type: 'nothing',  color: '#1e2040' },
+];
+var W_NOTHING_IDXS = [0, 2, 4, 5, 7];
+
+function drawWheelCanvas() {
+  var canvas = document.getElementById('wheel-canvas');
+  if (!canvas || !canvas.getContext) return;
+  var ctx = canvas.getContext('2d');
+  var cx  = canvas.width  / 2;
+  var cy  = canvas.height / 2;
+  var r   = cx - 4;
+  var n   = W_SEG.length;
+  var arc = (Math.PI * 2) / n;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  W_SEG.forEach(function(seg, i) {
+    var a0 = i * arc - Math.PI / 2;
+    var a1 = a0 + arc;
+    // segment fill
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, a0, a1);
+    ctx.closePath();
+    ctx.fillStyle = seg.color;
+    ctx.fill();
+    // border
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // text
+    var mid = a0 + arc / 2;
+    var tr  = r * 0.63;
+    ctx.save();
+    ctx.translate(cx + Math.cos(mid) * tr, cy + Math.sin(mid) * tr);
+    ctx.rotate(mid + Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText(seg.label, 0, -4);
+    ctx.font = '9px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.fillText(seg.sub, 0, 8);
+    ctx.restore();
+  });
+
+  // outer ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(129,140,248,0.4)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // center cap
+  ctx.beginPath();
+  ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+  ctx.fillStyle = '#0d0d14';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+  ctx.fillStyle = '#818cf8';
+  ctx.fill();
+}
+
+function canSpinWheel() {
+  try {
+    var raw = localStorage.getItem(WHEEL_KEY);
+    if (!raw) return true;
+    return JSON.parse(raw).date !== todayStr();
+  } catch(e) { return true; }
+}
+
+function markWheelSpun(prizeType) {
+  localStorage.setItem(WHEEL_KEY, JSON.stringify({ date: todayStr(), prize: prizeType }));
+}
+
+// Weighted random prize — probabilities match legend
+function pickWheelPrize() {
+  var r = Math.random() * 100;
+  if (r < 60) return 'nothing';
+  if (r < 80) return 'signals';   // 20%
+  if (r < 92) return 'days1';     // 12%
+  return 'days2';                 //  8%
+}
+
+function prizeToSegIdx(prize) {
+  if (prize === 'signals') return 1;
+  if (prize === 'days1')   return 3;
+  if (prize === 'days2')   return 6;
+  // nothing: pick random nothing segment
+  return W_NOTHING_IDXS[Math.floor(Math.random() * W_NOTHING_IDXS.length)];
+}
+
+function rotateTo(segIdx, onDone) {
+  var segDeg    = 360 / W_SEG.length;          // 45°
+  var segCenter = segIdx * segDeg + segDeg / 2; // center of target segment in degrees
+  // angle that must face the pointer (top = 0°)
+  var targetMod  = (360 - segCenter % 360 + 360) % 360;
+  var currentMod = ((_wAngle % 360) + 360) % 360;
+  var delta      = (targetMod - currentMod + 360) % 360;
+  if (delta < segDeg) delta += 360; // at least one full segment gap
+  _wAngle += delta + 360 * 6;       // 6 full spins for drama
+
+  var canvas = document.getElementById('wheel-canvas');
+  canvas.style.transition = 'transform 4.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+  canvas.style.transform  = 'rotate(' + _wAngle + 'deg)';
+  setTimeout(onDone, 4700);
+}
+
+function updateWheelHomeBadge() {
+  var badge = document.getElementById('wheel-home-badge');
+  if (!badge) return;
+  if (canSpinWheel()) {
+    badge.textContent  = 'DOSTĘPNE!';
+    badge.style.display = 'inline-block';
+  } else {
+    badge.textContent  = 'Jutro';
+    badge.style.display = 'inline-block';
+  }
+}
+
+function updateWheelUI() {
+  var canSpin     = canSpinWheel();
+  var btn         = document.getElementById('wheel-spin-btn');
+  var cooldownMsg = document.getElementById('wheel-cooldown-msg');
+  var subtitle    = document.getElementById('wheel-subtitle');
+  var resultBox   = document.getElementById('wheel-result-box');
+
+  if (canSpin) {
+    if (btn)      { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = '<span class="btn-icon">🎡</span> Zakręć!'; }
+    if (cooldownMsg) cooldownMsg.textContent = '';
+    if (subtitle)    subtitle.textContent = 'Kręć raz dziennie — zdobądź nagrodę!';
+  } else {
+    if (btn)      { btn.disabled = true; btn.style.opacity = '0.45'; }
+    if (cooldownMsg) cooldownMsg.innerHTML = '⏱ Następna szansa za <b>' + timeToMidnight() + '</b>';
+    if (subtitle)    subtitle.textContent = 'Już dziś kręciłeś — wróć jutro!';
+  }
+  updateWheelHomeBadge();
+}
+
+function showWheelResult(prize, seg) {
+  var box   = document.getElementById('wheel-result-box');
+  var emoji = document.getElementById('wheel-result-emoji');
+  var txt   = document.getElementById('wheel-result-text');
+  if (!box) return;
+
+  emoji.textContent = seg.emoji;
+  if (prize === 'nothing') {
+    txt.innerHTML = '<b>Tym razem bez nagrody...</b><br>Spróbuj jutro! 🍀';
+    box.className = 'wheel-result-box result-nothing';
+  } else if (prize === 'signals') {
+    txt.innerHTML = '🎉 <b>Wygrałeś +2 sygnały dziennie!</b><br>Dodatkowe sygnały aktywowane 🚀';
+    box.className = 'wheel-result-box result-win';
+    if (tg && tg.sendData) tg.sendData(JSON.stringify({ type: 'wheel_prize', prize: 'signals', value: 2 }));
+  } else {
+    var days = seg.value;
+    var word = days === 1 ? 'dzień' : 'dni';
+    txt.innerHTML = '🎉 <b>Wygrałeś +' + days + ' ' + word + ' subskrypcji!</b><br>Subskrypcja przedłużona 🚀';
+    box.className = 'wheel-result-box result-win';
+    if (tg && tg.sendData) tg.sendData(JSON.stringify({ type: 'wheel_prize', prize: 'days', value: days }));
+  }
+  box.style.display = 'flex';
+}
+
+function doSpinWheel() {
+  if (_wSpinning || !canSpinWheel()) { updateWheelUI(); return; }
+  _wSpinning = true;
+
+  var btn     = document.getElementById('wheel-spin-btn');
+  var resultBox = document.getElementById('wheel-result-box');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; btn.innerHTML = '🎡 Kręcę...'; }
+  if (resultBox) resultBox.style.display = 'none';
+
+  var prize  = pickWheelPrize();
+  var segIdx = prizeToSegIdx(prize);
+  var seg    = W_SEG[segIdx];
+
+  // Reset canvas transition instantly before spin
+  var canvas = document.getElementById('wheel-canvas');
+  canvas.style.transition = 'none';
+
+  rotateTo(segIdx, function() {
+    _wSpinning = false;
+    markWheelSpun(prize);
+    showWheelResult(prize, seg);
+    updateWheelUI();
+  });
+}
+
+function initWheelPage() {
+  // Draw wheel (only if canvas is empty / first visit)
+  var canvas = document.getElementById('wheel-canvas');
+  if (canvas && canvas.style.transform === '') {
+    _wAngle = 0;
+  }
+  drawWheelCanvas();
+  // Restore current rotation without animation
+  canvas.style.transition = 'none';
+  canvas.style.transform  = 'rotate(' + _wAngle + 'deg)';
+  updateWheelUI();
+}
+
+/* ════════════════════════════════
    SUBSCRIPTION TAB
 ════════════════════════════════ */
 function initSubTab() {
@@ -527,10 +747,12 @@ if (!_uid) {
   });
 
   updateHomeCards();
+  updateWheelHomeBadge();
 
   addBtn('signal-btn',     getSignal);
   addBtn('pen-signal-btn', getPenaltySignal);
   addBtn('avi-signal-btn', getAviatorSignal);
+  addBtn('wheel-spin-btn', doSpinWheel);
 
   addBtn('win-btn-mines', function() {
     _aviatorWins; // just ref
