@@ -22,6 +22,7 @@ const _params = new URLSearchParams(window.location.search);
 const _uid    = _params.get('uid')  || '';
 const _days   = parseInt(_params.get('days') || '0');
 const _vip    = _params.get('vip')  === '1';
+const _bonus  = parseInt(_params.get('bonus') || '0');  // referral bonus signals
 
 // Если пришли через бот — сохраняем для статистики
 if (_uid) localStorage.setItem('mp_uid', _uid);
@@ -62,7 +63,8 @@ function incSignals() {
   obj.count = (obj.count || 0) + 1;
   localStorage.setItem(SIGNAL_KEY, JSON.stringify(obj));
 }
-function canUseSignal() { return _vip || getSignalsUsed() < SIGNAL_LIMIT; }
+function getTotalLimit() { return SIGNAL_LIMIT + _bonus; }
+function canUseSignal() { return _vip || getSignalsUsed() < getTotalLimit(); }
 function timeToMidnight() {
   var now = new Date(), mid = new Date(now);
   mid.setHours(24, 0, 0, 0);
@@ -77,10 +79,12 @@ function updateCounterUI(elId) {
     el.innerHTML = '⭐ Sygnały nielimitowane';
     return;
   }
-  var left = Math.max(0, SIGNAL_LIMIT - getSignalsUsed());
+  var totalLimit = getTotalLimit();
+  var left = Math.max(0, totalLimit - getSignalsUsed());
   if (left > 0) {
     el.className = 'signal-counter';
-    el.innerHTML = '📡 Pozostało sygnałów dziś: <b>' + left + ' / ' + SIGNAL_LIMIT + '</b>';
+    var bonusStr = _bonus > 0 ? ' <span style="color:#a78bfa">(+' + _bonus + ' ref)</span>' : '';
+    el.innerHTML = '📡 Pozostało sygnałów dziś: <b>' + left + ' / ' + totalLimit + '</b>' + bonusStr;
   } else {
     el.className = 'signal-counter limit-reached';
     el.innerHTML = '🔒 Dzienny limit wyczerpany<br>⏱ Odnowienie za <b>' + timeToMidnight() + '</b>';
