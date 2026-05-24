@@ -112,13 +112,13 @@
     <button class="btn-back" onclick="showHome()">← Wróć</button>
 
     <section class="difficulty-section">
-      <label>Poziom trudności: <span id="diff-label">3</span> min</label>
+      <label>Liczba min: <span id="diff-label">3</span></label>
       <div class="slider-wrap">
-        <span>1</span>
-        <input type="range" id="difficulty" min="1" max="6" value="3"
+        <span>3</span>
+        <input type="range" id="difficulty" min="3" max="4" value="3"
                oninput="document.getElementById('diff-label').textContent=this.value"
                onchange="document.getElementById('diff-label').textContent=this.value" />
-        <span>6</span>
+        <span>4</span>
       </div>
     </section>
 
@@ -163,14 +163,6 @@
   <!-- ══════════ PAGE: PENALTY ══════════ -->
   <div id="page-penalty" class="page" style="display:none">
     <button class="btn-back" onclick="showHome()">← Wróć</button>
-
-    <section class="difficulty-section">
-      <label>Poziom trudności: <span id="pen-diff-label">Łatwy</span></label>
-      <div class="pen-diff-btns">
-        <button class="pen-diff-btn active" onclick="setPenDiff(this,'Łatwy',2)">Łatwy</button>
-        <button class="pen-diff-btn" onclick="setPenDiff(this,'Średni',4)">Średni</button>
-      </div>
-    </section>
 
     <section class="goal-section">
       <div class="goal-wrap">

@@ -1285,6 +1285,17 @@ input[type=range]::-webkit-slider-thumb:active {
   color: #fca5a5;
 }
 
+.signal-counter.cooldown-active {
+  border-color: rgba(251,191,36,0.30);
+  background: rgba(251,191,36,0.07);
+  color: #fcd34d;
+}
+
+.signal-counter.cooldown-active b {
+  color: #fde68a;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── LOADING DOTS ── */
 .dots::after {
   content: '';

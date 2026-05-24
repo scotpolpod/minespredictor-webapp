@@ -36,7 +36,7 @@ if (!_uid) {
 }
 
 let vavadaId = _uid;
-let penBlocked = 4;
+let penBlocked = 2;  // Łatwy — stały poziom
 
 /* ════════════════════════════════
    SIGNAL LIMIT
@@ -63,6 +63,7 @@ function incSignals() {
   obj.date = todayStr();
   obj.count = (obj.count || 0) + 1;
   localStorage.setItem(SIGNAL_KEY, JSON.stringify(obj));
+  setCooldown();
   updateHomeCards();
 }
 
@@ -91,7 +92,23 @@ function updateHomeCards() {
   });
 }
 function getTotalLimit() { return SIGNAL_LIMIT + _bonus; }
-function canUseSignal() { return _vip || getSignalsUsed() < getTotalLimit(); }
+
+/* ── 15-MINUTOWY COOLDOWN ───────────────────────────── */
+var COOLDOWN_KEY = 'mp_cooldown_until';
+var COOLDOWN_MS  = 15 * 60 * 1000;
+function isInCooldown() {
+  return Date.now() < (parseInt(localStorage.getItem(COOLDOWN_KEY) || '0'));
+}
+function setCooldown() {
+  localStorage.setItem(COOLDOWN_KEY, Date.now() + COOLDOWN_MS);
+}
+function cooldownRemaining() {
+  var r = (parseInt(localStorage.getItem(COOLDOWN_KEY) || '0')) - Date.now();
+  if (r <= 0) return null;
+  return Math.floor(r / 60000) + ':' + String(Math.floor((r % 60000) / 1000)).padStart(2, '0');
+}
+
+function canUseSignal() { return _vip || (getSignalsUsed() < getTotalLimit() && !isInCooldown()); }
 function timeToMidnight() {
   var now = new Date(), mid = new Date(now);
   mid.setHours(24, 0, 0, 0);
@@ -108,14 +125,20 @@ function updateCounterUI(elId) {
   }
   var totalLimit = getTotalLimit();
   var left = Math.max(0, totalLimit - getSignalsUsed());
-  if (left > 0) {
-    el.className = 'signal-counter';
-    var bonusStr = _bonus > 0 ? ' <span style="color:#a78bfa">(+' + _bonus + ' ref)</span>' : '';
-    el.innerHTML = '📡 Pozostało sygnałów dziś: <b>' + left + ' / ' + totalLimit + '</b>' + bonusStr;
-  } else {
+  if (left <= 0) {
     el.className = 'signal-counter limit-reached';
     el.innerHTML = '🔒 Dzienny limit wyczerpany<br>⏱ Odnowienie za <b>' + timeToMidnight() + '</b>';
+    return;
   }
+  var cd = cooldownRemaining();
+  if (cd) {
+    el.className = 'signal-counter cooldown-active';
+    el.innerHTML = '⏳ Następny sygnał za <b>' + cd + '</b>';
+    return;
+  }
+  el.className = 'signal-counter';
+  var bonusStr = _bonus > 0 ? ' <span style="color:#a78bfa">(+' + _bonus + ' ref)</span>' : '';
+  el.innerHTML = '📡 Pozostało sygnałów dziś: <b>' + left + ' / ' + totalLimit + '</b>' + bonusStr;
 }
 
 /* ════════════════════════════════
@@ -231,14 +254,6 @@ function updateStats(crystals, mines) {
    PENALTY
 ════════════════════════════════ */
 var ZONE_NAMES = ['GÓR-L','GÓR-C','GÓR','GÓR-C','GÓR-R','ŚR-L','ŚR-C','ŚR','ŚR-C','ŚR-R','DÓŁ-L','DÓŁ-C','DÓŁ','DÓŁ-C','DÓŁ-R'];
-
-function setPenDiff(btn, label, blocked) {
-  document.querySelectorAll('.pen-diff-btn').forEach(function(b) { b.classList.remove('active'); });
-  btn.classList.add('active');
-  document.getElementById('pen-diff-label').textContent = label;
-  penBlocked = blocked;
-  initGoal();
-}
 
 function initGoal() {
   var net = document.getElementById('goal-net');
@@ -786,11 +801,12 @@ if (!_uid) {
   updateCounterUI('signal-counter-mines');
   updateCounterUI('signal-counter-penalty');
   updateCounterUI('signal-counter-aviator');
+  // 1s interval — live cooldown countdown + minute-level limit refresh
   setInterval(function() {
     updateCounterUI('signal-counter-mines');
     updateCounterUI('signal-counter-penalty');
     updateCounterUI('signal-counter-aviator');
-  }, 60000);
+  }, 1000);
 
   checkDailyOptimize();
 }
