@@ -93,9 +93,9 @@ function updateHomeCards() {
 }
 function getTotalLimit() { return SIGNAL_LIMIT + _bonus; }
 
-/* ── 15-MINUTOWY COOLDOWN ───────────────────────────── */
+/* ── 6:30 COOLDOWN ───────────────────────────── */
 var COOLDOWN_KEY = 'mp_cooldown_until';
-var COOLDOWN_MS  = 15 * 60 * 1000;
+var COOLDOWN_MS  = 6 * 60 * 1000 + 30 * 1000;
 function isInCooldown() {
   return Date.now() < (parseInt(localStorage.getItem(COOLDOWN_KEY) || '0'));
 }
