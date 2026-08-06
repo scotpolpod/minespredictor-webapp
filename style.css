@@ -1587,3 +1587,68 @@ input[type=range]::-webkit-slider-thumb:active {
   opacity: 0;
   transition: opacity 0.3s;
 }
+
+/* ── EKSTRA SIGNAL ─────────────────────────────────── */
+.btn-ekstra-home {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  margin-top: 10px;
+}
+.ekstra-lock-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px;
+  text-align: center;
+  gap: 12px;
+}
+.ekstra-lock-icon {
+  font-size: 52px;
+  line-height: 1;
+}
+.ekstra-lock-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #a855f7;
+}
+.ekstra-lock-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  max-width: 280px;
+}
+.ekstra-pass-input {
+  width: 100%;
+  max-width: 260px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #7c3aed;
+  background: rgba(124,58,237,0.1);
+  color: var(--text);
+  font-size: 15px;
+  text-align: center;
+  outline: none;
+}
+.ekstra-pass-error {
+  color: #ef4444;
+  font-size: 13px;
+}
+.ekstra-pending-msg {
+  font-size: 13px;
+  color: #a78bfa;
+  line-height: 1.6;
+  max-width: 280px;
+  text-align: center;
+  padding: 12px;
+  background: rgba(124,58,237,0.1);
+  border-radius: 12px;
+}
+.ekstra-predictor-label {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #a855f7;
+  margin-bottom: 8px;
+}
+.btn-ekstra-signal {
+  background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
+}

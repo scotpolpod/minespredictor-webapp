@@ -24,6 +24,7 @@ const _days   = parseInt(_params.get('days') || '0');
 const _vip    = _params.get('vip')  === '1';
 const _bonus  = parseInt(_params.get('bonus') || '0');  // referral bonus signals
 const _ref    = _params.get('ref') || '';               // user's own referral code
+const _extra  = _params.get('extra') === '1';           // ekstra signal access
 
 // Если пришли через бот — сохраняем для статистики
 if (_uid) localStorage.setItem('mp_uid', _uid);
@@ -144,8 +145,8 @@ function updateCounterUI(elId) {
 /* ════════════════════════════════
    TABS
 ════════════════════════════════ */
-var PAGES = ['home','mines','penalty','aviator','instrukcja','sub','wheel'];
-var LOGOS = { home: '💎 MinesPredictor', mines: '💎 Mines', penalty: '⚽ Penalty', aviator: '✈️ Aviator', instrukcja: '📋 Instrukcja', sub: '🔑 Konto', wheel: '🎡 Koło Fortuny' };
+var PAGES = ['home','mines','penalty','aviator','instrukcja','sub','wheel','ekstra'];
+var LOGOS = { home: '💎 MinesPredictor', mines: '💎 Mines', penalty: '⚽ Penalty', aviator: '✈️ Aviator', instrukcja: '📋 Instrukcja', sub: '🔑 Konto', wheel: '🎡 Koło Fortuny', ekstra: '⭐ Ekstra Sygnał' };
 
 function openGame(page) {
   PAGES.forEach(function(p) {
@@ -156,7 +157,8 @@ function openGame(page) {
   if (page === 'sub')    initSubTab();
   if (page === 'aviator') updateAviatorDisplay();
   if (page === 'wheel')  initWheelPage();
-  if (page === 'home')   { updateHomeCards(); updateWheelHomeBadge(); }
+  if (page === 'home')   { updateHomeCards(); updateWheelHomeBadge(); updateEkstraHomeBadge(); }
+  if (page === 'ekstra') initEkstraPage();
 }
 
 function showHome() {
@@ -806,7 +808,163 @@ if (!_uid) {
     updateCounterUI('signal-counter-mines');
     updateCounterUI('signal-counter-penalty');
     updateCounterUI('signal-counter-aviator');
+    updateEkstraCounter();
   }, 1000);
 
   checkDailyOptimize();
+}
+
+/* ════════════════════════════════
+   EKSTRA SIGNAL
+════════════════════════════════ */
+var EKSTRA_PASS       = 'ekstra2026penalt';
+var EKSTRA_USED_KEY   = 'mp_ekstra_used';  // date string — used once per day
+var EKSTRA_PASS_OK_KEY= 'mp_ekstra_unlocked';
+
+function updateEkstraHomeBadge() {
+  var badge = document.getElementById('ekstra-home-badge');
+  if (!badge) return;
+  if (_extra) {
+    var used = localStorage.getItem(EKSTRA_USED_KEY);
+    badge.textContent = used === new Date().toDateString() ? 'Użyty dziś' : 'DOSTĘPNE!';
+  } else {
+    badge.textContent = '🔒';
+  }
+}
+
+function initEkstraPage() {
+  var passOk  = _extra || localStorage.getItem(EKSTRA_PASS_OK_KEY) === '1';
+  document.getElementById('ekstra-password-screen').style.display  = passOk ? 'none' : 'block';
+  document.getElementById('ekstra-request-screen').style.display   = 'none';
+  document.getElementById('ekstra-predictor-screen').style.display = 'none';
+
+  if (passOk && _extra) {
+    // Has full access — show predictor
+    document.getElementById('ekstra-predictor-screen').style.display = 'block';
+    initEkstraGoal();
+    updateEkstraCounter();
+  } else if (passOk && !_extra) {
+    // Password unlocked but no access yet — show request screen
+    document.getElementById('ekstra-request-screen').style.display = 'block';
+    var pending = localStorage.getItem('mp_ekstra_pending') === '1';
+    if (pending) {
+      document.getElementById('ekstra-request-btn').style.display = 'none';
+      document.getElementById('ekstra-pending-msg').style.display = 'block';
+    }
+  }
+
+  // Password button
+  var passBtn = document.getElementById('ekstra-pass-btn');
+  if (passBtn) {
+    passBtn.onclick = function() {
+      var val = document.getElementById('ekstra-pass-input').value;
+      if (val === EKSTRA_PASS) {
+        localStorage.setItem(EKSTRA_PASS_OK_KEY, '1');
+        document.getElementById('ekstra-pass-error').style.display = 'none';
+        document.getElementById('ekstra-password-screen').style.display = 'none';
+        if (_extra) {
+          document.getElementById('ekstra-predictor-screen').style.display = 'block';
+          initEkstraGoal();
+          updateEkstraCounter();
+        } else {
+          document.getElementById('ekstra-request-screen').style.display = 'block';
+        }
+      } else {
+        document.getElementById('ekstra-pass-error').style.display = 'block';
+      }
+    };
+  }
+
+  // Request button
+  var reqBtn = document.getElementById('ekstra-request-btn');
+  if (reqBtn) {
+    reqBtn.onclick = function() {
+      if (tg && tg.sendData) {
+        tg.sendData(JSON.stringify({ type: 'extra_request' }));
+        localStorage.setItem('mp_ekstra_pending', '1');
+        reqBtn.style.display = 'none';
+        document.getElementById('ekstra-pending-msg').style.display = 'block';
+      }
+    };
+  }
+
+  // Ekstra signal button
+  var sigBtn = document.getElementById('ekstra-signal-btn');
+  if (sigBtn) {
+    sigBtn.onclick = function() {
+      var used = localStorage.getItem(EKSTRA_USED_KEY);
+      if (used === new Date().toDateString()) {
+        return; // already used today
+      }
+      sigBtn.disabled = true;
+      sigBtn.innerHTML = '<span class="dots">Analizuję</span>';
+      setTimeout(function() {
+        renderEkstraSignal();
+        localStorage.setItem(EKSTRA_USED_KEY, new Date().toDateString());
+        sigBtn.innerHTML = '<span class="btn-icon">⭐</span> Pobierz Ekstra Sygnał';
+        sigBtn.disabled = false;
+        updateEkstraCounter();
+      }, 1500 + Math.random() * 800);
+    };
+  }
+}
+
+function initEkstraGoal() {
+  var net = document.getElementById('ekstra-goal-net');
+  if (!net) return;
+  net.innerHTML = '';
+  for (var i = 0; i < 15; i++) {
+    var cell = document.createElement('div');
+    cell.className = 'goal-cell';
+    cell.dataset.idx = i;
+    net.appendChild(cell);
+  }
+}
+
+function renderEkstraSignal() {
+  var cells = document.querySelectorAll('#ekstra-goal-net .goal-cell');
+  var total = 15;
+  var indices = Array.from({length: total}, function(_, i) { return i; });
+  for (var i = indices.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = indices[i]; indices[i] = indices[j]; indices[j] = t;
+  }
+  // 4-7 safe signal zones
+  var signalCount = 4 + Math.floor(Math.random() * 4);
+  var blocked     = 15 - signalCount;
+  var blockedSet  = new Set(indices.slice(0, blocked));
+  var signalSet   = new Set(indices.slice(blocked));
+
+  cells.forEach(function(cell, i) {
+    cell.className = 'goal-cell';
+    cell.textContent = '';
+    setTimeout(function() {
+      if (blockedSet.has(i))      { cell.classList.add('blocked'); cell.textContent = '❌'; }
+      else if (signalSet.has(i))  { cell.classList.add('signal-zone'); cell.textContent = '✅'; }
+    }, i * 35);
+  });
+
+  var chance = Math.floor(85 + Math.random() * 12);
+  setTimeout(function() {
+    document.getElementById('ekstra-stat-zones').textContent    = signalCount;
+    document.getElementById('ekstra-stat-chance').textContent   = signalCount + '/15';
+    document.getElementById('ekstra-stat-accuracy').textContent = chance + '%';
+  }, total * 35 + 100);
+}
+
+function updateEkstraCounter() {
+  var el = document.getElementById('ekstra-signal-counter');
+  if (!el || !_extra) return;
+  var used = localStorage.getItem(EKSTRA_USED_KEY) === new Date().toDateString();
+  if (used) {
+    el.textContent = '⏳ Następny sygnał jutro';
+    el.className = 'signal-counter cooldown-active';
+    var btn = document.getElementById('ekstra-signal-btn');
+    if (btn) btn.disabled = true;
+  } else {
+    el.textContent = '⭐ 1 sygnał dostępny dziś';
+    el.className = 'signal-counter';
+    var btn = document.getElementById('ekstra-signal-btn');
+    if (btn) btn.disabled = false;
+  }
 }

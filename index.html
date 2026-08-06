@@ -74,9 +74,84 @@
       <span class="wheel-home-badge" id="wheel-home-badge"></span>
     </button>
 
+    <button class="btn-wheel-home btn-ekstra-home" onclick="openGame('ekstra')" id="btn-ekstra-home">
+      <span class="wheel-home-left">⭐ Ekstra Sygnał</span>
+      <span class="wheel-home-badge" id="ekstra-home-badge"></span>
+    </button>
+
     <div class="home-bottom-btns">
       <button class="home-btn-secondary" onclick="openGame('instrukcja')">📋 Instrukcja</button>
       <button class="home-btn-secondary" onclick="openGame('sub')">🔑 Konto</button>
+    </div>
+  </div>
+
+  <!-- ══════════ PAGE: EKSTRA ══════════ -->
+  <div id="page-ekstra" class="page" style="display:none">
+    <button class="btn-back" onclick="showHome()">← Wróć</button>
+
+    <!-- Экран пароля -->
+    <div id="ekstra-password-screen">
+      <section class="ekstra-lock-section">
+        <div class="ekstra-lock-icon">⭐</div>
+        <div class="ekstra-lock-title">Ekstra Sygnał</div>
+        <div class="ekstra-lock-desc">Ekskluzywny sygnał penalty z <b>4–7 bezpiecznymi strefami</b>.<br>Wymagany depozyt <b>300 zł</b>.</div>
+        <input type="password" id="ekstra-pass-input" class="ekstra-pass-input" placeholder="Wpisz hasło dostępu" />
+        <div class="ekstra-pass-error" id="ekstra-pass-error" style="display:none">❌ Błędne hasło</div>
+        <button class="btn-signal" id="ekstra-pass-btn" style="margin-top:12px">
+          <span class="btn-icon">🔓</span> Odblokuj
+        </button>
+      </section>
+    </div>
+
+    <!-- Экран запроса доступа -->
+    <div id="ekstra-request-screen" style="display:none">
+      <section class="ekstra-lock-section">
+        <div class="ekstra-lock-icon">📸</div>
+        <div class="ekstra-lock-title">Wymagana weryfikacja</div>
+        <div class="ekstra-lock-desc">Aby odblokować Ekstra Sygnał — wpłać <b>300 zł</b> w SlotsGems i wyślij potwierdzenie.<br><br>Kliknij przycisk — bot poprosi o zrzut ekranu.</div>
+        <button class="btn-signal" id="ekstra-request-btn" style="margin-top:12px">
+          <span class="btn-icon">📤</span> Wyślij zgłoszenie
+        </button>
+        <div class="ekstra-pending-msg" id="ekstra-pending-msg" style="display:none">
+          ⏳ Zgłoszenie wysłane. Oczekuj weryfikacji — po zatwierdzeniu dostęp zostanie przyznany automatycznie.
+        </div>
+      </section>
+    </div>
+
+    <!-- Экран предиктора (после получения доступа) -->
+    <div id="ekstra-predictor-screen" style="display:none">
+      <section class="goal-section">
+        <div class="ekstra-predictor-label">⭐ Ekstra Sygnał Penalty</div>
+        <div class="goal-wrap">
+          <div class="goal-crossbar"></div>
+          <div class="goal-post left"></div>
+          <div class="goal-post right"></div>
+          <div class="goal-net" id="ekstra-goal-net"></div>
+        </div>
+        <div class="ball-row"><div class="ball">⚽</div></div>
+      </section>
+
+      <section class="signal-section">
+        <button class="btn-signal btn-ekstra-signal" id="ekstra-signal-btn">
+          <span class="btn-icon">⭐</span> Pobierz Ekstra Sygnał
+        </button>
+        <div class="signal-counter" id="ekstra-signal-counter"></div>
+      </section>
+
+      <section class="stats-section">
+        <div class="stat-box">
+          <div class="stat-val" id="ekstra-stat-zones">—</div>
+          <div class="stat-lbl">Strefy</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="ekstra-stat-chance">—</div>
+          <div class="stat-lbl">Szansa</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="ekstra-stat-accuracy">—</div>
+          <div class="stat-lbl">Dokładność</div>
+        </div>
+      </section>
     </div>
   </div>
 
