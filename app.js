@@ -874,12 +874,12 @@ function initEkstraPage() {
 
   // Request button
   addBtn('ekstra-request-btn', function() {
+    localStorage.setItem('mp_ekstra_pending', '1');
+    var reqBtn = document.getElementById('ekstra-request-btn');
+    if (reqBtn) reqBtn.style.display = 'none';
+    document.getElementById('ekstra-pending-msg').style.display = 'block';
     if (tg && tg.sendData) {
       tg.sendData(JSON.stringify({ type: 'extra_request' }));
-      localStorage.setItem('mp_ekstra_pending', '1');
-      var reqBtn = document.getElementById('ekstra-request-btn');
-      if (reqBtn) reqBtn.style.display = 'none';
-      document.getElementById('ekstra-pending-msg').style.display = 'block';
     }
   });
 

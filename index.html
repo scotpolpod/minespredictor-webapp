@@ -115,7 +115,7 @@
         <div class="ekstra-pending-msg" id="ekstra-pending-msg" style="display:none">
           ⏳ Zgłoszenie wysłane. Oczekuj weryfikacji — po zatwierdzeniu dostęp zostanie przyznany automatycznie.
           <br><br>
-          <button class="btn-signal" id="ekstra-resend-btn" style="margin-top:8px;font-size:13px;padding:8px 16px">
+          <button class="btn-signal" id="ekstra-resend-btn" onclick="localStorage.removeItem('mp_ekstra_pending');document.getElementById('ekstra-pending-msg').style.display='none';document.getElementById('ekstra-request-btn').style.display='block';" style="margin-top:8px;font-size:13px;padding:8px 16px">
             🔄 Wyślij ponownie
           </button>
         </div>
