@@ -25,6 +25,7 @@ const _vip    = _params.get('vip')  === '1';
 const _bonus  = parseInt(_params.get('bonus') || '0');  // referral bonus signals
 const _ref    = _params.get('ref') || '';               // user's own referral code
 const _extra  = _params.get('extra') === '1';           // ekstra signal access
+const _bot    = _params.get('bot') || '';               // bot username for deep links
 
 // Если пришли через бот — сохраняем для статистики
 if (_uid) localStorage.setItem('mp_uid', _uid);
@@ -872,14 +873,18 @@ function initEkstraPage() {
     }
   });
 
-  // Request button
+  // Request button — uses deep link (more reliable than sendData on mobile)
   addBtn('ekstra-request-btn', function() {
     localStorage.setItem('mp_ekstra_pending', '1');
     var reqBtn = document.getElementById('ekstra-request-btn');
     if (reqBtn) reqBtn.style.display = 'none';
     document.getElementById('ekstra-pending-msg').style.display = 'block';
-    if (tg && tg.sendData) {
-      tg.sendData(JSON.stringify({ type: 'extra_request' }));
+    var botName = _bot || 'rmpl13';
+    var link = 'https://t.me/' + botName + '?start=ekstra_request';
+    if (tg && tg.openTelegramLink) {
+      tg.openTelegramLink(link);
+    } else if (tg && tg.openLink) {
+      tg.openLink(link);
     }
   });
 

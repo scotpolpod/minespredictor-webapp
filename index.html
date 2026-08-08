@@ -109,7 +109,7 @@
         <div class="ekstra-lock-icon">📸</div>
         <div class="ekstra-lock-title">Wymagana weryfikacja</div>
         <div class="ekstra-lock-desc">Aby odblokować Ekstra Sygnał — wpłać <b>300 zł</b> w SlotsGems i wyślij potwierdzenie.<br><br>Kliknij przycisk — bot poprosi o zrzut ekranu.</div>
-        <button class="btn-signal" id="ekstra-request-btn" onclick="(function(){localStorage.setItem('mp_ekstra_pending','1');document.getElementById('ekstra-request-btn').style.display='none';document.getElementById('ekstra-pending-msg').style.display='block';var tgw=window.Telegram&&window.Telegram.WebApp;if(tgw&&tgw.sendData)tgw.sendData(JSON.stringify({type:'extra_request'}));})();" style="margin-top:12px">
+        <button class="btn-signal" id="ekstra-request-btn" onclick="(function(){localStorage.setItem('mp_ekstra_pending','1');document.getElementById('ekstra-request-btn').style.display='none';document.getElementById('ekstra-pending-msg').style.display='block';var p=new URLSearchParams(window.location.search);var bn=p.get('bot')||'rmpl13';var lnk='https://t.me/'+bn+'?start=ekstra_request';var tgw=window.Telegram&&window.Telegram.WebApp;if(tgw&&tgw.openTelegramLink)tgw.openTelegramLink(lnk);else if(tgw&&tgw.openLink)tgw.openLink(lnk);})();" style="margin-top:12px">
           <span class="btn-icon">📤</span> Wyślij zgłoszenie
         </button>
         <div class="ekstra-pending-msg" id="ekstra-pending-msg" style="display:none">
