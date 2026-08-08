@@ -883,6 +883,14 @@ function initEkstraPage() {
     }
   });
 
+  // Resend button — resets pending state
+  addBtn('ekstra-resend-btn', function() {
+    localStorage.removeItem('mp_ekstra_pending');
+    document.getElementById('ekstra-pending-msg').style.display = 'none';
+    var reqBtn = document.getElementById('ekstra-request-btn');
+    if (reqBtn) reqBtn.style.display = 'block';
+  });
+
   // Ekstra signal button
   addBtn('ekstra-signal-btn', function() {
     var used = localStorage.getItem(EKSTRA_USED_KEY);
