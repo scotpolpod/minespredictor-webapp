@@ -854,59 +854,49 @@ function initEkstraPage() {
   }
 
   // Password button
-  var passBtn = document.getElementById('ekstra-pass-btn');
-  if (passBtn) {
-    passBtn.onclick = function() {
-      var val = document.getElementById('ekstra-pass-input').value;
-      if (val === EKSTRA_PASS) {
-        localStorage.setItem(EKSTRA_PASS_OK_KEY, '1');
-        document.getElementById('ekstra-pass-error').style.display = 'none';
-        document.getElementById('ekstra-password-screen').style.display = 'none';
-        if (_extra) {
-          document.getElementById('ekstra-predictor-screen').style.display = 'block';
-          initEkstraGoal();
-          updateEkstraCounter();
-        } else {
-          document.getElementById('ekstra-request-screen').style.display = 'block';
-        }
+  addBtn('ekstra-pass-btn', function() {
+    var val = document.getElementById('ekstra-pass-input').value;
+    if (val === EKSTRA_PASS) {
+      localStorage.setItem(EKSTRA_PASS_OK_KEY, '1');
+      document.getElementById('ekstra-pass-error').style.display = 'none';
+      document.getElementById('ekstra-password-screen').style.display = 'none';
+      if (_extra) {
+        document.getElementById('ekstra-predictor-screen').style.display = 'block';
+        initEkstraGoal();
+        updateEkstraCounter();
       } else {
-        document.getElementById('ekstra-pass-error').style.display = 'block';
+        document.getElementById('ekstra-request-screen').style.display = 'block';
       }
-    };
-  }
+    } else {
+      document.getElementById('ekstra-pass-error').style.display = 'block';
+    }
+  });
 
   // Request button
-  var reqBtn = document.getElementById('ekstra-request-btn');
-  if (reqBtn) {
-    reqBtn.onclick = function() {
-      if (tg && tg.sendData) {
-        tg.sendData(JSON.stringify({ type: 'extra_request' }));
-        localStorage.setItem('mp_ekstra_pending', '1');
-        reqBtn.style.display = 'none';
-        document.getElementById('ekstra-pending-msg').style.display = 'block';
-      }
-    };
-  }
+  addBtn('ekstra-request-btn', function() {
+    if (tg && tg.sendData) {
+      tg.sendData(JSON.stringify({ type: 'extra_request' }));
+      localStorage.setItem('mp_ekstra_pending', '1');
+      var reqBtn = document.getElementById('ekstra-request-btn');
+      if (reqBtn) reqBtn.style.display = 'none';
+      document.getElementById('ekstra-pending-msg').style.display = 'block';
+    }
+  });
 
   // Ekstra signal button
-  var sigBtn = document.getElementById('ekstra-signal-btn');
-  if (sigBtn) {
-    sigBtn.onclick = function() {
-      var used = localStorage.getItem(EKSTRA_USED_KEY);
-      if (used === new Date().toDateString()) {
-        return; // already used today
-      }
-      sigBtn.disabled = true;
-      sigBtn.innerHTML = '<span class="dots">Analizuję</span>';
-      setTimeout(function() {
-        renderEkstraSignal();
-        localStorage.setItem(EKSTRA_USED_KEY, new Date().toDateString());
-        sigBtn.innerHTML = '<span class="btn-icon">⭐</span> Pobierz Ekstra Sygnał';
-        sigBtn.disabled = false;
-        updateEkstraCounter();
-      }, 1500 + Math.random() * 800);
-    };
-  }
+  addBtn('ekstra-signal-btn', function() {
+    var used = localStorage.getItem(EKSTRA_USED_KEY);
+    if (used === new Date().toDateString()) return;
+    var sigBtn = document.getElementById('ekstra-signal-btn');
+    if (sigBtn) sigBtn.disabled = true;
+    if (sigBtn) sigBtn.innerHTML = '<span class="dots">Analizuję</span>';
+    setTimeout(function() {
+      renderEkstraSignal();
+      localStorage.setItem(EKSTRA_USED_KEY, new Date().toDateString());
+      if (sigBtn) { sigBtn.innerHTML = '<span class="btn-icon">⭐</span> Pobierz Ekstra Sygnał'; sigBtn.disabled = false; }
+      updateEkstraCounter();
+    }, 1500 + Math.random() * 800);
+  });
 }
 
 function initEkstraGoal() {
